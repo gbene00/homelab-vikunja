@@ -3,9 +3,9 @@ kind: Kustomization
 namespace: vikunja
 resources:
   - namespace.yaml
-  - vikunja-secret.yaml
   - postgres-statefulset.yaml
   - postgres-service.yaml
   - vikunja-deployment.yaml
   - vikunja-service.yaml
   - ingress.yaml
+  - secretproviderclass.yaml

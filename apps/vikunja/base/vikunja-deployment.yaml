@@ -13,6 +13,13 @@ spec:
       labels:
         app: vikunja
     spec:
+      volumes:
+        - name: vikunja-secrets-store
+          csi:
+            driver: secrets-store.csi.k8s.io
+            readOnly: true
+            volumeAttributes:
+              secretProviderClass: vikunja-akv
       containers:
         - name: vikunja
           image: vikunja/vikunja:latest
@@ -60,3 +67,7 @@ spec:
                 configMapKeyRef:
                   name: vikunja-config
                   key: VIKUNJA_DEFAULT_TIMEZONE
+          volumeMounts:
+            - name: vikunja-secrets-store
+              mountPath: "/mnt/secrets-store"
+              readOnly: true
