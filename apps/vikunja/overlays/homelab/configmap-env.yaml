@@ -1,0 +1,9 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: vikunja-config
+  namespace: vikunja
+data:
+  VIKUNJA_SERVICE_FRONTENDURL: "http://vikunja.local"
+  VIKUNJA_SERVICE_PUBLICURL: "http://vikunja.local"
+  VIKUNJA_DEFAULT_TIMEZONE: "Europe/Bucharest"
