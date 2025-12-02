@@ -33,7 +33,7 @@ spec:
             - name: VIKUNJA_DATABASE_PORT
               value: "5432"
             - name: VIKUNJA_DATABASE_DATABASE
-              value: "vikunja-db"
+              value: "vikunja"
 
             - name: VIKUNJA_DATABASE_USER
               valueFrom:
