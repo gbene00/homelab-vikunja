@@ -33,10 +33,8 @@ spec:
             - name: VIKUNJA_DATABASE_PORT
               value: "5432"
             - name: VIKUNJA_DATABASE_DATABASE
-              valueFrom:
-                secretKeyRef:
-                  name: vikunja-secret
-                  key: POSTGRES_DB
+              value: "vikunja-db"
+
             - name: VIKUNJA_DATABASE_USER
               valueFrom:
                 secretKeyRef:
@@ -52,6 +50,7 @@ spec:
                 secretKeyRef:
                   name: vikunja-secret
                   key: VIKUNJA_SERVICE_JWTSECRET
+
             - name: VIKUNJA_SERVICE_FRONTENDURL
               valueFrom:
                 configMapKeyRef:
@@ -67,6 +66,7 @@ spec:
                 configMapKeyRef:
                   name: vikunja-config
                   key: VIKUNJA_DEFAULT_TIMEZONE
+
           volumeMounts:
             - name: vikunja-secrets-store
               mountPath: "/mnt/secrets-store"
