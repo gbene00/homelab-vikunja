@@ -4,3 +4,4 @@ resources:
   - ./flux-system
   - ../../infrastructure
   - ../../apps
+  - ../../infrastructure/monitoring
