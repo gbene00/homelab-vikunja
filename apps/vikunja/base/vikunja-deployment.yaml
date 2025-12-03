@@ -39,17 +39,19 @@ spec:
               valueFrom:
                 secretKeyRef:
                   name: vikunja-secret
-                  key: POSTGRES_USER
+                  key: VIKUNJA_DATABASE_USER
+
             - name: VIKUNJA_DATABASE_PASSWORD
               valueFrom:
                 secretKeyRef:
                   name: vikunja-secret
-                  key: POSTGRES_PASSWORD
+                  key: VIKUNJA_DATABASE_PASSWORD
+
             - name: VIKUNJA_SERVICE_JWTSECRET
               valueFrom:
                 secretKeyRef:
                   name: vikunja-secret
-                  key: VIKUNJA_SERVICE_JWTSECRET
+                  key: VIKUNJA_JWT_SECRET
 
             - name: VIKUNJA_SERVICE_FRONTENDURL
               valueFrom:

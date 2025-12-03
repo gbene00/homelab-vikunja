@@ -21,20 +21,20 @@ spec:
             - containerPort: 5432
           env:
             - name: POSTGRES_DB
-              valueFrom:
-                secretKeyRef:
-                  name: vikunja-secret
-                  key: POSTGRES_DB
+              value: vikunja
+
             - name: POSTGRES_USER
               valueFrom:
                 secretKeyRef:
                   name: vikunja-secret
-                  key: POSTGRES_USER
+                  key: VIKUNJA_DATABASE_USER
+
             - name: POSTGRES_PASSWORD
               valueFrom:
                 secretKeyRef:
                   name: vikunja-secret
-                  key: POSTGRES_PASSWORD
+                  key: VIKUNJA_DATABASE_PASSWORD
+
             - name: PGDATA
               value: /var/lib/postgresql/data/pgdata
           volumeMounts:
