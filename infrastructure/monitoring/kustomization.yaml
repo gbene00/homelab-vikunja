@@ -5,3 +5,4 @@ resources:
   - namespace.yaml
   - kube-prom-stack/helmrepository.yaml
   - kube-prom-stack/helmrelease.yaml
+  - kube-grafana-stack/grafana-ingress.yaml
