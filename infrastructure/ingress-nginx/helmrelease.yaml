@@ -17,4 +17,6 @@ spec:
   values:
     controller:
       service:
+        enabled: true
         type: LoadBalancer
+        externalTrafficPolicy: Cluster
