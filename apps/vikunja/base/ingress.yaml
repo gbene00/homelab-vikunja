@@ -4,11 +4,17 @@ metadata:
   name: vikunja
   namespace: vikunja
   annotations:
-    nginx.ingress.kubernetes.io/proxy-body-size: "10m"
+    kubernetes.io/ingress.class: nginx
+    cert-manager.io/cluster-issuer: letsencrypt-prod
 spec:
   ingressClassName: nginx
+  tls:
+    - hosts:
+        - vikunja.homelab-gbene.net
+      secretName: vikunja-tls
   rules:
-    - http:
+    - host: vikunja.homelab-gbene.net
+      http:
         paths:
           - path: /
             pathType: Prefix
