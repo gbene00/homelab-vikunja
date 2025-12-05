@@ -20,3 +20,5 @@ spec:
         enabled: true
         type: LoadBalancer
         externalTrafficPolicy: Cluster
+        annotations:
+          service.beta.kubernetes.io/azure-load-balancer-health-probe-request-path: "/healthz"
