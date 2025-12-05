@@ -8,4 +8,4 @@ resources:
   - vikunja-deployment.yaml
   - vikunja-service.yaml
   - ingress.yaml
-  - secretproviderclass.yaml
+#  - secretproviderclass.yaml

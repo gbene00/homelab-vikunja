@@ -3,3 +3,4 @@ kind: Kustomization
 resources:
   - ../../base
   - configmap-env.yaml
+  - secret-vikunja.yaml
