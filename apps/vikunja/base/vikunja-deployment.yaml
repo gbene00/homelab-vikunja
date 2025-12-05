@@ -43,7 +43,8 @@ spec:
             - name: VIKUNJA_SERVICE_JWTSECRET
               valueFrom:
                 secretKeyRef:
-                  name: VIKUNJA_JWT_SECRET
+                  name: vikunja-secret
+                  key: VIKUNJA_JWT_SECRET
 
             - name: VIKUNJA_SERVICE_FRONTENDURL
               valueFrom:
