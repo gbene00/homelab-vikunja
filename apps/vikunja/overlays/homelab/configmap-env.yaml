@@ -4,6 +4,6 @@ metadata:
   name: vikunja-config
   namespace: vikunja
 data:
-  VIKUNJA_SERVICE_FRONTENDURL: "https://vikunja.local"
-  VIKUNJA_SERVICE_PUBLICURL: "https://vikunja.local"
+  VIKUNJA_SERVICE_FRONTENDURL: "https://vikunja.homelab-gbene.local"
+  VIKUNJA_SERVICE_PUBLICURL: "https://vikunja.homelab-gbene.local"
   VIKUNJA_DEFAULT_TIMEZONE: "Europe/Bucharest"
