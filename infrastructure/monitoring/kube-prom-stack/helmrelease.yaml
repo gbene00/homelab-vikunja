@@ -25,7 +25,10 @@ spec:
       enabled: true
       service:
         type: ClusterIP
-      adminPassword: "grafanaAdmin123!"  # move to KV+CSI later
+      admin:
+        existingSecret: grafana-admin-credentials
+        userKey: admin-user
+        passwordKey: admin-password
 
     prometheus:
       service:
