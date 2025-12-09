@@ -1,0 +1,4 @@
+creation_rules:
+  - path_regex: infrastructure/velero/.*\.yaml
+    encrypted_regex: '^(data|stringData)$'
+    age: age1jsxzylyaxjj52rjkla5gvcdxyk52udp5vahrtpfxvet2th2p0uvq0263ye
