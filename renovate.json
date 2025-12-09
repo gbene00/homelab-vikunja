@@ -1,0 +1,30 @@
+{
+  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+
+  "extends": ["config:recommended"],
+
+  "timezone": "Europe/Bucharest",
+  "onboarding": false,
+  "labels": ["renovate", "dependencies"],
+
+  "packageRules": [
+    {
+      "description": "Group all Docker image updates",
+      "matchDatasources": ["docker"],
+      "groupName": "docker images"
+    },
+    {
+      "description": "Group all Helm chart updates",
+      "matchDatasources": ["helm"],
+      "groupName": "helm charts"
+    }
+  ],
+
+  "kubernetes": {
+    "fileMatch": [
+      "(^|/)apps/.+\\.ya?ml$",
+      "(^|/)clusters/.+\\.ya?ml$",
+      "(^|/)infrastructure/.+\\.ya?ml$"
+    ]
+  }
+}
