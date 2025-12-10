@@ -16,28 +16,29 @@ spec:
 
   install:
     createNamespace: false
+
   values:
     configuration:
-      provider: azure
-      backupStorageLocation:
-        name: azure
-        bucket: velero-backups
-        prefix: backups
-        config:
-          resourceGroup: homelab-rg
-          storageAccount: homelabstorage100
-          storageAccountKeyEnvVar: AZURE_STORAGE_ACCOUNT_ACCESS_KEY
+      backupStorageLocations:
+        - name: azure
+          provider: azure
+          bucket: velero-backups
+          prefix: backups
+          config:
+            resourceGroup: homelab-rg
+            storageAccount: homelabstorage100
+            storageAccountKeyEnvVar: AZURE_STORAGE_ACCOUNT_ACCESS_KEY
 
     credentials:
       useSecret: true
       existingSecret: cloud-credentials
       existingSecretKey: cloud
 
+    deployNodeAgent: true
+
     initContainers:
       - name: velero-plugin-for-microsoft-azure
         image: velero/velero-plugin-for-microsoft-azure:v1.9.0
         volumeMounts:
-          - name: plugins
-            mountPath: /target
-
-    deployRestic: true
+          - mountPath: /target
+            name: plugins
