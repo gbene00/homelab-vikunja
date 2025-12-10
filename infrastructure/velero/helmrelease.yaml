@@ -20,6 +20,7 @@ spec:
   values:
     configuration: {}
 
+    # New-style backup storage locations
     backupStorageLocations:
       - name: azure
         provider: azure
@@ -36,24 +37,20 @@ spec:
       existingSecret: cloud-credentials
       existingSecretKey: cloud
 
-    # Enable node-agent
+    # This replaces old "deployRestic"
     deployNodeAgent: true
     nodeAgent:
       podConfig:
         nodeSelector:
-          kubernetes.azure.com/agentpool: usernp
+          kubernetes.azure.com/mode: "user"
+        tolerations: []
 
-    # Azure plugin init container
+    # Azure plugin init container for main velero Deployment
     initContainers:
       - name: velero-plugin-for-microsoft-azure
         image: velero/velero-plugin-for-microsoft-azure:v1.9.0
         volumeMounts:
           - mountPath: /target
             name: plugins
-
-    # Fix broken Bitnami kubectl image tag
     upgradeCRDs:
-      image:
-        repository: docker.io/bitnami/kubectl
-        tag: "1.32"
-        pullPolicy: IfNotPresent
+      enabled: false
