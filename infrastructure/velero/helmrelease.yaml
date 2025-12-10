@@ -18,31 +18,50 @@ spec:
     createNamespace: false
 
   values:
-    configuration: {}
+    configuration:
+      backupStorageLocation:
+        - name: azure
+          provider: azure
+          bucket: velero-backups
+          prefix: backups
+          config:
+            resourceGroup: homelab-rg
+            storageAccount: homelabstorage100
+            storageAccountKeyEnvVar: AZURE_STORAGE_ACCOUNT_ACCESS_KEY
 
-    backupStorageLocations:
-      - name: azure
-        provider: azure
-        bucket: velero-backups
-        prefix: backups
-        config:
-          resourceGroup: homelab-rg
-          storageAccount: homelabstorage100
-          storageAccountKeyEnvVar: AZURE_STORAGE_ACCOUNT_ACCESS_KEY
-
+    # Use existing secret with SOPS-encrypted creds
     credentials:
       useSecret: true
       existingSecret: cloud-credentials
       existingSecretKey: cloud
+
+    # Pin Velero server to user nodes only
+    nodeSelector:
+      kubernetes.azure.com/mode: "user"
+
+    resources:
+      requests:
+        cpu: "250m"
+        memory: "256Mi"
+      limits:
+        cpu: "500m"
+        memory: "512Mi"
+
+    # ==== NODE AGENT (RESTIC) DAEMONSET ====
     deployNodeAgent: true
+
     nodeAgent:
+      nodeSelector:
+        kubernetes.azure.com/mode: "user"
       resources:
         requests:
-          cpu: 100m
-          memory: 128Mi
+          cpu: "250m"
+          memory: "256Mi"
         limits:
-          cpu: 300m
-          memory: 512Mi
+          cpu: "500m"
+          memory: "512Mi"
+
+    # Azure plugin init container
     initContainers:
       - name: velero-plugin-for-microsoft-azure
         image: velero/velero-plugin-for-microsoft-azure:v1.9.0
@@ -50,6 +69,7 @@ spec:
           - mountPath: /target
             name: plugins
 
+    # Fix broken Bitnami kubectl image tag for CRD upgrades
     upgradeCRDs:
       image:
         repository: docker.io/bitnami/kubectl
