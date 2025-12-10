@@ -41,6 +41,11 @@ spec:
 
     # Required since deployRestic was removed
     deployNodeAgent: true
+    nodeAgent:
+      enabled: true
+      podConfig:
+        nodeSelector:
+          kubernetes.azure.com/agentpool: usernp
 
     # Azure plugin init container
     initContainers:
