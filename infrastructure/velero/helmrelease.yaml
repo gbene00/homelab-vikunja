@@ -18,11 +18,8 @@ spec:
     createNamespace: false
 
   values:
-    # Configuration fields required by the chart
-    configuration:
-      volumeSnapshotLocation: []
+    configuration: {}
 
-    # BSL configuration (new style)
     backupStorageLocations:
       - name: azure
         provider: azure
@@ -33,16 +30,15 @@ spec:
           storageAccount: homelabstorage100
           storageAccountKeyEnvVar: AZURE_STORAGE_ACCOUNT_ACCESS_KEY
 
-    # Use existing encrypted creds
+    # Use existing secret with SOPS-encrypted creds
     credentials:
       useSecret: true
       existingSecret: cloud-credentials
       existingSecretKey: cloud
 
-    # Required since deployRestic was removed
+    # Enable node-agent
     deployNodeAgent: true
     nodeAgent:
-      enabled: true
       podConfig:
         nodeSelector:
           kubernetes.azure.com/agentpool: usernp
@@ -55,6 +51,9 @@ spec:
           - mountPath: /target
             name: plugins
 
-    # Disable CRD upgrade job
-    upgradeCRDs: {}
-
+    # Fix broken Bitnami kubectl image tag
+    upgradeCRDs:
+      image:
+        repository: docker.io/bitnami/kubectl
+        tag: "1.32"
+        pullPolicy: IfNotPresent
