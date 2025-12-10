@@ -20,7 +20,6 @@ spec:
   values:
     configuration: {}
 
-    # New-style backup storage locations
     backupStorageLocations:
       - name: azure
         provider: azure
@@ -31,26 +30,28 @@ spec:
           storageAccount: homelabstorage100
           storageAccountKeyEnvVar: AZURE_STORAGE_ACCOUNT_ACCESS_KEY
 
-    # Use existing secret with SOPS-encrypted creds
     credentials:
       useSecret: true
       existingSecret: cloud-credentials
       existingSecretKey: cloud
-
-    # This replaces old "deployRestic"
     deployNodeAgent: true
     nodeAgent:
-      podConfig:
-        nodeSelector:
-          kubernetes.azure.com/mode: "user"
-        tolerations: []
-
-    # Azure plugin init container for main velero Deployment
+      resources:
+        requests:
+          cpu: 100m
+          memory: 128Mi
+        limits:
+          cpu: 300m
+          memory: 512Mi
     initContainers:
       - name: velero-plugin-for-microsoft-azure
         image: velero/velero-plugin-for-microsoft-azure:v1.9.0
         volumeMounts:
           - mountPath: /target
             name: plugins
+
     upgradeCRDs:
-      enabled: false
+      image:
+        repository: docker.io/bitnami/kubectl
+        tag: "1.32"
+        pullPolicy: IfNotPresent
