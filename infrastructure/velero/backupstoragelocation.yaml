@@ -1,0 +1,17 @@
+apiVersion: velero.io/v1
+kind: BackupStorageLocation
+metadata:
+  name: azure
+  namespace: velero
+spec:
+  provider: azure
+  objectStorage:
+    bucket: velero-backups
+    prefix: backups
+  config:
+    resourceGroup: homelab-rg
+    storageAccount: homelabstorage100
+    storageAccountKeyEnvVar: AZURE_STORAGE_ACCOUNT_ACCESS_KEY
+  credential:
+    name: cloud-credentials
+    key: cloud
