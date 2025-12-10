@@ -1,0 +1,10 @@
+apiVersion: velero.io/v1
+kind: Backup
+metadata:
+  name: vikunja-initial
+  namespace: velero
+spec:
+  includedNamespaces:
+    - vikunja
+  storageLocation: azure
+  ttl: 720h0m0s

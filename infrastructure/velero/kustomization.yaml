@@ -7,3 +7,5 @@ resources:
   - cloud-credentials-secret.yaml
   - helmrelease.yaml
   - backupstoragelocation.yaml
+  - backupvikunja.yaml
+  - scueduleweeklybackup.yaml

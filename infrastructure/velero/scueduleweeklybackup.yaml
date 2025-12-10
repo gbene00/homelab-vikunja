@@ -1,0 +1,13 @@
+apiVersion: velero.io/v1
+kind: Schedule
+metadata:
+  name: vikunja-daily
+  namespace: velero
+spec:
+  # Every Monday at 12:00 UTC
+  schedule: 0 12 * * 1
+  template:
+    includedNamespaces:
+      - vikunja
+    storageLocation: azure
+    ttl: 720h0m0s    # 30 days
