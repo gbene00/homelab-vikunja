@@ -20,7 +20,10 @@ This repository contains the full GitOps-driven Kubernetes platform for my perso
 
  - Nginx Ingress Controller deployed via HelmRelease
  - Fully automated TLS certificates using Cert-Manager & Let’s Encrypt
- - HTTPS for all exposed services (Grafana, Prometheus, Vikunja
+ - HTTPS for all exposed services
+      - Vikunja
+      - Prometheus
+      - Grafana
 
 ### **Monitoring & Observability**
 
@@ -40,3 +43,17 @@ This repository contains the full GitOps-driven Kubernetes platform for my perso
      - AKS cluster
      - Storage account + Blob containers
      - Key Vault
+
+### **Automated Dependency Updates (Renovate)**
+
+ - Renovate scans the repository and automatically creates pull requests for:
+     - New container image versions
+     - Updated Helm charts
+     - Ensures the cluster stays up to date safely, with manual PR approval
+
+### **Backup**
+
+ - Velero integrated with Azure Blob Storage
+ - Restic NodeAgent for persistent volume backups
+ - Kubernetes object & PVC backups
+ - Weekly Velero schedules
