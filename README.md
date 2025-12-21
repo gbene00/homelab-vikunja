@@ -1,6 +1,7 @@
 # **Homelab Vikunja**
 
 This repository contains the full GitOps-driven Kubernetes platform for my personal homelab, running on Azure Kubernetes Service. The cluster and all workloads are fully managed declaratively using FluxCD, ensuring reproducibility, security, and automated reconciliation of the entire stack.
+I have chosen the Vikunja, because it's an open-source task and project management application designed to help stay organized and productive.
 
 ## **What This Repository Includes**
 
