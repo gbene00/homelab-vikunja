@@ -12,32 +12,153 @@ data:
       "title": "Vikunja",
       "timezone": "browser",
       "schemaVersion": 39,
-      "version": 2,
+      "version": 3,
       "refresh": "30s",
-      "tags": ["vikunja", "homelab"],
+      "tags": ["vikunja", "homelab", "sre"],
       "time": { "from": "now-6h", "to": "now" },
+      "templating": {
+        "list": [
+          {
+            "name": "namespace",
+            "type": "constant",
+            "query": "vikunja",
+            "current": { "selected": true, "text": "vikunja", "value": "vikunja" }
+          },
+          {
+            "name": "pod",
+            "type": "query",
+            "datasource": { "type": "prometheus", "uid": "prometheus" },
+            "query": "label_values(kube_pod_info{namespace=\"$namespace\", pod=~\"vikunja-.*\"}, pod)",
+            "current": { "selected": false, "text": "All", "value": ".*" }
+          }
+        ]
+      },
       "panels": [
         {
           "type": "timeseries",
-          "title": "Target Up (Vikunja)",
-          "gridPos": { "x": 0, "y": 0, "w": 24, "h": 7 },
+          "title": "Target Up (Vikunja metrics endpoint)",
+          "gridPos": { "x": 0, "y": 0, "w": 12, "h": 6 },
           "datasource": { "type": "prometheus", "uid": "prometheus" },
           "targets": [
             {
-              "expr": "up{namespace=\"vikunja\", job=~\".*vikunja.*\"}",
+              "expr": "up{namespace=\"$namespace\", job=~\".*vikunja.*\"}",
+              "refId": "A"
+            }
+          ]
+        },
+        {
+          "type": "stat",
+          "title": "Pods Ready",
+          "gridPos": { "x": 12, "y": 0, "w": 6, "h": 6 },
+          "datasource": { "type": "prometheus", "uid": "prometheus" },
+          "targets": [
+            {
+              "expr": "sum(kube_pod_status_ready{namespace=\"$namespace\", pod=~\"vikunja-.*\", condition=\"true\"})",
+              "refId": "A"
+            }
+          ]
+        },
+        {
+          "type": "stat",
+          "title": "Pods Not Ready",
+          "gridPos": { "x": 18, "y": 0, "w": 6, "h": 6 },
+          "datasource": { "type": "prometheus", "uid": "prometheus" },
+          "targets": [
+            {
+              "expr": "sum(kube_pod_status_ready{namespace=\"$namespace\", pod=~\"vikunja-.*\", condition=\"false\"})",
               "refId": "A"
             }
           ]
         },
         {
           "type": "timeseries",
-          "title": "Requests / second (placeholder)",
-          "description": "This panel may be blank depending on which metrics Vikunja exposes. We'll refine once we inspect actual metric names.",
-          "gridPos": { "x": 0, "y": 7, "w": 24, "h": 7 },
+          "title": "Pod restarts (rate)",
+          "gridPos": { "x": 0, "y": 6, "w": 12, "h": 7 },
           "datasource": { "type": "prometheus", "uid": "prometheus" },
           "targets": [
             {
-              "expr": "sum(rate(http_requests_total{namespace=\"vikunja\"}[5m]))",
+              "expr": "sum by (pod) (rate(kube_pod_container_status_restarts_total{namespace=\"$namespace\", pod=~\"vikunja-.*\"}[5m]))",
+              "refId": "A"
+            }
+          ]
+        },
+        {
+          "type": "timeseries",
+          "title": "CPU usage (cores)",
+          "gridPos": { "x": 12, "y": 6, "w": 12, "h": 7 },
+          "datasource": { "type": "prometheus", "uid": "prometheus" },
+          "targets": [
+            {
+              "expr": "sum by (pod) (rate(container_cpu_usage_seconds_total{namespace=\"$namespace\", pod=~\"vikunja-.*\", container=\"vikunja\"}[5m]))",
+              "refId": "A"
+            }
+          ]
+        },
+        {
+          "type": "timeseries",
+          "title": "Memory working set (bytes)",
+          "gridPos": { "x": 0, "y": 13, "w": 12, "h": 7 },
+          "datasource": { "type": "prometheus", "uid": "prometheus" },
+          "targets": [
+            {
+              "expr": "sum by (pod) (container_memory_working_set_bytes{namespace=\"$namespace\", pod=~\"vikunja-.*\", container=\"vikunja\"})",
+              "refId": "A"
+            }
+          ]
+        },
+        {
+          "type": "timeseries",
+          "title": "Network receive / transmit (bytes/sec)",
+          "gridPos": { "x": 12, "y": 13, "w": 12, "h": 7 },
+          "datasource": { "type": "prometheus", "uid": "prometheus" },
+          "targets": [
+            {
+              "expr": "sum by (pod) (rate(container_network_receive_bytes_total{namespace=\"$namespace\", pod=~\"vikunja-.*\"}[5m]))",
+              "refId": "A"
+            },
+            {
+              "expr": "sum by (pod) (rate(container_network_transmit_bytes_total{namespace=\"$namespace\", pod=~\"vikunja-.*\"}[5m]))",
+              "refId": "B"
+            }
+          ]
+        },
+        {
+          "type": "timeseries",
+          "title": "Ingress RPS (vikunja.homelab-gbene.net)",
+          "description": "Traffic as seen by ingress-nginx (production signal). Adjust host filter if needed.",
+          "gridPos": { "x": 0, "y": 20, "w": 12, "h": 7 },
+          "datasource": { "type": "prometheus", "uid": "prometheus" },
+          "targets": [
+            {
+              "expr": "sum(rate(nginx_ingress_controller_requests{host=\"vikunja.homelab-gbene.net\"}[5m]))",
+              "refId": "A"
+            }
+          ]
+        },
+        {
+          "type": "timeseries",
+          "title": "Ingress error rate (4xx / 5xx) - vikunja",
+          "gridPos": { "x": 12, "y": 20, "w": 12, "h": 7 },
+          "datasource": { "type": "prometheus", "uid": "prometheus" },
+          "targets": [
+            {
+              "expr": "sum(rate(nginx_ingress_controller_requests{host=\"vikunja.homelab-gbene.net\", status=~\"4..\"}[5m]))",
+              "refId": "A"
+            },
+            {
+              "expr": "sum(rate(nginx_ingress_controller_requests{host=\"vikunja.homelab-gbene.net\", status=~\"5..\"}[5m]))",
+              "refId": "B"
+            }
+          ]
+        },
+        {
+          "type": "timeseries",
+          "title": "Ingress latency p95 (seconds) - vikunja",
+          "gridPos": { "x": 0, "y": 27, "w": 24, "h": 7 },
+          "datasource": { "type": "prometheus", "uid": "prometheus" },
+          "targets": [
+            {
+              "expr": "histogram_quantile(0.95, sum by (le) (rate(nginx_ingress_controller_request_duration_seconds_bucket{host=\"vikunja.homelab-gbene.net\"}[5m])))",
               "refId": "A"
             }
           ]
