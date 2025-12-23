@@ -68,6 +68,11 @@ spec:
                 configMapKeyRef:
                   name: vikunja-config
                   key: VIKUNJA_DEFAULT_TIMEZONE
+            - name: VIKUNJA_METRICS_ENABLED
+              valueFrom:
+                configMapKeyRef:
+                  name: vikunja-config
+                  key: VIKUNJA_METRICS_ENABLED
           volumeMounts:
             - name: vikunja-secrets-store
               mountPath: "/mnt/secrets-store"
