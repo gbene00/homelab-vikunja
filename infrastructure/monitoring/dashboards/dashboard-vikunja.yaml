@@ -1,0 +1,46 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: grafana-dashboard-vikunja
+  namespace: monitoring
+  labels:
+    grafana_dashboard: "1"
+data:
+  vikunja.json: |
+    {
+      "uid": "vikunja",
+      "title": "Vikunja",
+      "timezone": "browser",
+      "schemaVersion": 39,
+      "version": 2,
+      "refresh": "30s",
+      "tags": ["vikunja", "homelab"],
+      "time": { "from": "now-6h", "to": "now" },
+      "panels": [
+        {
+          "type": "timeseries",
+          "title": "Target Up (Vikunja)",
+          "gridPos": { "x": 0, "y": 0, "w": 24, "h": 7 },
+          "datasource": { "type": "prometheus", "uid": "prometheus" },
+          "targets": [
+            {
+              "expr": "up{namespace=\"vikunja\", job=~\".*vikunja.*\"}",
+              "refId": "A"
+            }
+          ]
+        },
+        {
+          "type": "timeseries",
+          "title": "Requests / second (placeholder)",
+          "description": "This panel may be blank depending on which metrics Vikunja exposes. We'll refine once we inspect actual metric names.",
+          "gridPos": { "x": 0, "y": 7, "w": 24, "h": 7 },
+          "datasource": { "type": "prometheus", "uid": "prometheus" },
+          "targets": [
+            {
+              "expr": "sum(rate(http_requests_total{namespace=\"vikunja\"}[5m]))",
+              "refId": "A"
+            }
+          ]
+        }
+      ]
+    }
