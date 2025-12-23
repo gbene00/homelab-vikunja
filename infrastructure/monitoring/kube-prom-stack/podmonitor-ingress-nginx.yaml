@@ -17,4 +17,4 @@ spec:
   podMetricsEndpoints:
     - path: /metrics
       interval: 30s
-      targetPort: 10254
+      portNumber: 10254
