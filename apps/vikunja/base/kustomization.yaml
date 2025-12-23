@@ -9,3 +9,4 @@ resources:
   - vikunja-service.yaml
   - ingress.yaml
   - secretproviderclass.yaml
+  - servicemonitor.yaml

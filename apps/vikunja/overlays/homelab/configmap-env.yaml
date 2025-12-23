@@ -7,3 +7,4 @@ data:
   VIKUNJA_SERVICE_FRONTENDURL: "https://vikunja.homelab-gbene.net"
   VIKUNJA_SERVICE_PUBLICURL: "https://vikunja.homelab-gbene.net"
   VIKUNJA_DEFAULT_TIMEZONE: "Europe/Bucharest"
+  VIKUNJA_METRICS_ENABLED: "true"
