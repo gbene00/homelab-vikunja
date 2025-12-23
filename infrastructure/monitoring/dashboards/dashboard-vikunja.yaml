@@ -12,10 +12,10 @@ data:
       "title": "Vikunja",
       "timezone": "browser",
       "schemaVersion": 39,
-      "version": 3,
+      "version": 4,
       "refresh": "30s",
       "tags": ["vikunja", "homelab", "sre"],
-      "time": { "from": "now-6h", "to": "now" },
+      "time": { "from": "now-24h", "to": "now" },
       "templating": {
         "list": [
           {
@@ -25,11 +25,10 @@ data:
             "current": { "selected": true, "text": "vikunja", "value": "vikunja" }
           },
           {
-            "name": "pod",
-            "type": "query",
-            "datasource": { "type": "prometheus", "uid": "prometheus" },
-            "query": "label_values(kube_pod_info{namespace=\"$namespace\", pod=~\"vikunja-.*\"}, pod)",
-            "current": { "selected": false, "text": "All", "value": ".*" }
+            "name": "host",
+            "type": "constant",
+            "query": "vikunja.homelab-gbene.net",
+            "current": { "selected": true, "text": "vikunja.homelab-gbene.net", "value": "vikunja.homelab-gbene.net" }
           }
         ]
       },
@@ -40,128 +39,88 @@ data:
           "gridPos": { "x": 0, "y": 0, "w": 12, "h": 6 },
           "datasource": { "type": "prometheus", "uid": "prometheus" },
           "targets": [
-            {
-              "expr": "up{namespace=\"$namespace\", job=~\".*vikunja.*\"}",
-              "refId": "A"
-            }
-          ]
-        },
-        {
-          "type": "stat",
-          "title": "Pods Ready",
-          "gridPos": { "x": 12, "y": 0, "w": 6, "h": 6 },
-          "datasource": { "type": "prometheus", "uid": "prometheus" },
-          "targets": [
-            {
-              "expr": "sum(kube_pod_status_ready{namespace=\"$namespace\", pod=~\"vikunja-.*\", condition=\"true\"})",
-              "refId": "A"
-            }
-          ]
-        },
-        {
-          "type": "stat",
-          "title": "Pods Not Ready",
-          "gridPos": { "x": 18, "y": 0, "w": 6, "h": 6 },
-          "datasource": { "type": "prometheus", "uid": "prometheus" },
-          "targets": [
-            {
-              "expr": "sum(kube_pod_status_ready{namespace=\"$namespace\", pod=~\"vikunja-.*\", condition=\"false\"})",
-              "refId": "A"
-            }
+            { "expr": "up{namespace=\"$namespace\", job=~\".*vikunja.*\"}", "refId": "A" }
           ]
         },
         {
           "type": "timeseries",
           "title": "Pod restarts (rate)",
-          "gridPos": { "x": 0, "y": 6, "w": 12, "h": 7 },
+          "gridPos": { "x": 12, "y": 0, "w": 12, "h": 6 },
           "datasource": { "type": "prometheus", "uid": "prometheus" },
           "targets": [
-            {
-              "expr": "sum by (pod) (rate(kube_pod_container_status_restarts_total{namespace=\"$namespace\", pod=~\"vikunja-.*\"}[5m]))",
-              "refId": "A"
-            }
+            { "expr": "sum by (pod) (rate(kube_pod_container_status_restarts_total{namespace=\"$namespace\", pod=~\"vikunja-.*\"}[5m]))", "refId": "A" }
+          ]
+        },
+
+        {
+          "type": "stat",
+          "title": "Active Users",
+          "gridPos": { "x": 0, "y": 6, "w": 4, "h": 5 },
+          "datasource": { "type": "prometheus", "uid": "prometheus" },
+          "targets": [
+            { "expr": "max(vikunja_active_users)", "refId": "A" }
           ]
         },
         {
-          "type": "timeseries",
-          "title": "CPU usage (cores)",
-          "gridPos": { "x": 12, "y": 6, "w": 12, "h": 7 },
+          "type": "stat",
+          "title": "Total Users",
+          "gridPos": { "x": 4, "y": 6, "w": 4, "h": 5 },
           "datasource": { "type": "prometheus", "uid": "prometheus" },
           "targets": [
-            {
-              "expr": "sum by (pod) (rate(container_cpu_usage_seconds_total{namespace=\"$namespace\", pod=~\"vikunja-.*\", container=\"vikunja\"}[5m]))",
-              "refId": "A"
-            }
+            { "expr": "max(vikunja_user_count)", "refId": "A" }
           ]
         },
         {
-          "type": "timeseries",
-          "title": "Memory working set (bytes)",
-          "gridPos": { "x": 0, "y": 13, "w": 12, "h": 7 },
+          "type": "stat",
+          "title": "Projects",
+          "gridPos": { "x": 8, "y": 6, "w": 4, "h": 5 },
           "datasource": { "type": "prometheus", "uid": "prometheus" },
           "targets": [
-            {
-              "expr": "sum by (pod) (container_memory_working_set_bytes{namespace=\"$namespace\", pod=~\"vikunja-.*\", container=\"vikunja\"})",
-              "refId": "A"
-            }
+            { "expr": "max(vikunja_project_count)", "refId": "A" }
           ]
         },
         {
-          "type": "timeseries",
-          "title": "Network receive / transmit (bytes/sec)",
-          "gridPos": { "x": 12, "y": 13, "w": 12, "h": 7 },
+          "type": "stat",
+          "title": "Tasks",
+          "gridPos": { "x": 12, "y": 6, "w": 4, "h": 5 },
           "datasource": { "type": "prometheus", "uid": "prometheus" },
           "targets": [
-            {
-              "expr": "sum by (pod) (rate(container_network_receive_bytes_total{namespace=\"$namespace\", pod=~\"vikunja-.*\"}[5m]))",
-              "refId": "A"
-            },
-            {
-              "expr": "sum by (pod) (rate(container_network_transmit_bytes_total{namespace=\"$namespace\", pod=~\"vikunja-.*\"}[5m]))",
-              "refId": "B"
-            }
+            { "expr": "max(vikunja_task_count)", "refId": "A" }
           ]
         },
         {
-          "type": "timeseries",
-          "title": "Ingress RPS (vikunja.homelab-gbene.net)",
-          "description": "Traffic as seen by ingress-nginx (production signal). Adjust host filter if needed.",
-          "gridPos": { "x": 0, "y": 20, "w": 12, "h": 7 },
+          "type": "stat",
+          "title": "Teams",
+          "gridPos": { "x": 16, "y": 6, "w": 4, "h": 5 },
           "datasource": { "type": "prometheus", "uid": "prometheus" },
           "targets": [
-            {
-              "expr": "sum(rate(nginx_ingress_controller_requests{host=\"vikunja.homelab-gbene.net\"}[5m]))",
-              "refId": "A"
-            }
+            { "expr": "max(vikunja_team_count)", "refId": "A" }
           ]
         },
         {
-          "type": "timeseries",
-          "title": "Ingress error rate (4xx / 5xx) - vikunja",
-          "gridPos": { "x": 12, "y": 20, "w": 12, "h": 7 },
+          "type": "stat",
+          "title": "Active Link Shares",
+          "gridPos": { "x": 20, "y": 6, "w": 4, "h": 5 },
           "datasource": { "type": "prometheus", "uid": "prometheus" },
           "targets": [
-            {
-              "expr": "sum(rate(nginx_ingress_controller_requests{host=\"vikunja.homelab-gbene.net\", status=~\"4..\"}[5m]))",
-              "refId": "A"
-            },
-            {
-              "expr": "sum(rate(nginx_ingress_controller_requests{host=\"vikunja.homelab-gbene.net\", status=~\"5..\"}[5m]))",
-              "refId": "B"
-            }
+            { "expr": "max(vikunja_active_link_shares)", "refId": "A" }
           ]
         },
+
         {
           "type": "timeseries",
-          "title": "Ingress latency p95 (seconds) - vikunja",
-          "gridPos": { "x": 0, "y": 27, "w": 24, "h": 7 },
+          "title": "Tasks / Projects / Users over time",
+          "gridPos": { "x": 0, "y": 11, "w": 24, "h": 7 },
           "datasource": { "type": "prometheus", "uid": "prometheus" },
           "targets": [
-            {
-              "expr": "histogram_quantile(0.95, sum by (le) (rate(nginx_ingress_controller_request_duration_seconds_bucket{host=\"vikunja.homelab-gbene.net\"}[5m])))",
-              "refId": "A"
-            }
+            { "expr": "max(vikunja_task_count)", "refId": "A" },
+            { "expr": "max(vikunja_project_count)", "refId": "B" },
+            { "expr": "max(vikunja_user_count)", "refId": "C" }
           ]
-        }
-      ]
-    }
+        },
+
+        {
+          "type": "timeseries",
+          "title": "Files / Attachments count",
+          "gridPos": { "x": 0, "y": 18, "w": 24, "h": 7 },
+          "datasource": { "type": "prometheus", "uid": "prometheus" },
