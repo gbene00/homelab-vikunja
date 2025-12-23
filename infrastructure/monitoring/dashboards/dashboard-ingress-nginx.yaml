@@ -1,0 +1,133 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: grafana-dashboard-ingress-nginx
+  namespace: monitoring
+  labels:
+    grafana_dashboard: "1"
+data:
+  ingress-nginx.json: |
+    {
+      "uid": "ingress-nginx",
+      "title": "Ingress NGINX",
+      "timezone": "browser",
+      "schemaVersion": 39,
+      "version": 1,
+      "refresh": "30s",
+      "tags": ["ingress-nginx", "kubernetes", "sre"],
+      "time": { "from": "now-6h", "to": "now" },
+      "templating": {
+        "list": [
+          {
+            "name": "namespace",
+            "type": "query",
+            "datasource": { "type": "prometheus", "uid": "prometheus" },
+            "query": "label_values(nginx_ingress_controller_requests, namespace)",
+            "current": { "selected": false, "text": "All", "value": ".*" }
+          },
+          {
+            "name": "ingress",
+            "type": "query",
+            "datasource": { "type": "prometheus", "uid": "prometheus" },
+            "query": "label_values(nginx_ingress_controller_requests{namespace=~\"$namespace\"}, ingress)",
+            "current": { "selected": false, "text": "All", "value": ".*" }
+          }
+        ]
+      },
+      "panels": [
+        {
+          "type": "timeseries",
+          "title": "Request rate (RPS)",
+          "gridPos": { "x": 0, "y": 0, "w": 12, "h": 7 },
+          "datasource": { "type": "prometheus", "uid": "prometheus" },
+          "targets": [
+            {
+              "expr": "sum(rate(nginx_ingress_controller_requests{namespace=~\"$namespace\", ingress=~\"$ingress\"}[5m]))",
+              "refId": "A"
+            }
+          ]
+        },
+        {
+          "type": "timeseries",
+          "title": "Error rate (4xx / 5xx RPS)",
+          "gridPos": { "x": 12, "y": 0, "w": 12, "h": 7 },
+          "datasource": { "type": "prometheus", "uid": "prometheus" },
+          "targets": [
+            {
+              "expr": "sum(rate(nginx_ingress_controller_requests{namespace=~\"$namespace\", ingress=~\"$ingress\", status=~\"4..\"}[5m]))",
+              "refId": "A"
+            },
+            {
+              "expr": "sum(rate(nginx_ingress_controller_requests{namespace=~\"$namespace\", ingress=~\"$ingress\", status=~\"5..\"}[5m]))",
+              "refId": "B"
+            }
+          ]
+        },
+        {
+          "type": "timeseries",
+          "title": "Latency p50 / p95 / p99 (seconds)",
+          "gridPos": { "x": 0, "y": 7, "w": 24, "h": 8 },
+          "datasource": { "type": "prometheus", "uid": "prometheus" },
+          "targets": [
+            {
+              "expr": "histogram_quantile(0.50, sum by (le) (rate(nginx_ingress_controller_request_duration_seconds_bucket{namespace=~\"$namespace\", ingress=~\"$ingress\"}[5m])))",
+              "refId": "A"
+            },
+            {
+              "expr": "histogram_quantile(0.95, sum by (le) (rate(nginx_ingress_controller_request_duration_seconds_bucket{namespace=~\"$namespace\", ingress=~\"$ingress\"}[5m])))",
+              "refId": "B"
+            },
+            {
+              "expr": "histogram_quantile(0.99, sum by (le) (rate(nginx_ingress_controller_request_duration_seconds_bucket{namespace=~\"$namespace\", ingress=~\"$ingress\"}[5m])))",
+              "refId": "C"
+            }
+          ]
+        },
+        {
+          "type": "timeseries",
+          "title": "Controller CPU (cores)",
+          "gridPos": { "x": 0, "y": 15, "w": 12, "h": 7 },
+          "datasource": { "type": "prometheus", "uid": "prometheus" },
+          "targets": [
+            {
+              "expr": "sum(rate(container_cpu_usage_seconds_total{namespace=\"ingress-nginx\", pod=~\"ingress-nginx-controller-.*\", container=\"controller\"}[5m]))",
+              "refId": "A"
+            }
+          ]
+        },
+        {
+          "type": "timeseries",
+          "title": "Controller memory (bytes)",
+          "gridPos": { "x": 12, "y": 15, "w": 12, "h": 7 },
+          "datasource": { "type": "prometheus", "uid": "prometheus" },
+          "targets": [
+            {
+              "expr": "sum(container_memory_working_set_bytes{namespace=\"ingress-nginx\", pod=~\"ingress-nginx-controller-.*\", container=\"controller\"})",
+              "refId": "A"
+            }
+          ]
+        },
+        {
+          "type": "timeseries",
+          "title": "Config reload errors (rate)",
+          "gridPos": { "x": 0, "y": 22, "w": 12, "h": 7 },
+          "datasource": { "type": "prometheus", "uid": "prometheus" },
+          "targets": [
+            {
+              "expr": "sum(rate(nginx_ingress_controller_config_last_reload_successful{job=~\".*ingress-nginx.*\"}[5m]))",
+              "refId": "A"
+            }
+          ]
+        },
+        {
+          "type": "timeseries",
+          "title": "NGINX process connections (active, reading, writing, waiting) - if available",
+          "description": "Some ingress-nginx versions expose nginx_process_connections metrics; this panel will show data when present.",
+          "gridPos": { "x": 12, "y": 22, "w": 12, "h": 7 },
+          "datasource": { "type": "prometheus", "uid": "prometheus" },
+          "targets": [
+            { "expr": "sum(nginx_process_connections{namespace=\"ingress-nginx\"})", "refId": "A" }
+          ]
+        }
+      ]
+    }

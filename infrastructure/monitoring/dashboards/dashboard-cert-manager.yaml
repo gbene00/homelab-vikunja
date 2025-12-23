@@ -1,0 +1,125 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: grafana-dashboard-cert-manager
+  namespace: monitoring
+  labels:
+    grafana_dashboard: "1"
+data:
+  cert-manager.json: |
+    {
+      "uid": "cert-manager",
+      "title": "cert-manager",
+      "timezone": "browser",
+      "schemaVersion": 39,
+      "version": 1,
+      "refresh": "30s",
+      "tags": ["cert-manager", "tls", "kubernetes"],
+      "time": { "from": "now-24h", "to": "now" },
+      "templating": {
+        "list": [
+          {
+            "name": "namespace",
+            "type": "query",
+            "datasource": { "type": "prometheus", "uid": "prometheus" },
+            "query": "label_values(certmanager_controller_sync_call_count, namespace)",
+            "current": { "selected": true, "text": "cert-manager", "value": "cert-manager" }
+          }
+        ]
+      },
+      "panels": [
+        {
+          "type": "stat",
+          "title": "Certificates expiring soon (<= 7d)",
+          "gridPos": { "x": 0, "y": 0, "w": 8, "h": 5 },
+          "datasource": { "type": "prometheus", "uid": "prometheus" },
+          "targets": [
+            {
+              "expr": "sum(certmanager_certificate_expiration_timestamp_seconds{namespace=~\"$namespace\"} - time() < 7*24*3600)",
+              "refId": "A"
+            }
+          ]
+        },
+        {
+          "type": "stat",
+          "title": "Certificates expiring soon (<= 30d)",
+          "gridPos": { "x": 8, "y": 0, "w": 8, "h": 5 },
+          "datasource": { "type": "prometheus", "uid": "prometheus" },
+          "targets": [
+            {
+              "expr": "sum(certmanager_certificate_expiration_timestamp_seconds{namespace=~\"$namespace\"} - time() < 30*24*3600)",
+              "refId": "A"
+            }
+          ]
+        },
+        {
+          "type": "timeseries",
+          "title": "Controller sync errors (rate)",
+          "gridPos": { "x": 16, "y": 0, "w": 8, "h": 5 },
+          "datasource": { "type": "prometheus", "uid": "prometheus" },
+          "targets": [
+            {
+              "expr": "sum by (controller) (rate(certmanager_controller_sync_call_count{namespace=~\"$namespace\", status=\"error\"}[5m]))",
+              "refId": "A"
+            }
+          ]
+        },
+        {
+          "type": "timeseries",
+          "title": "Certificate readiness (not ready)",
+          "description": "Shows certificates that are not Ready based on cert-manager condition metrics (if exposed).",
+          "gridPos": { "x": 0, "y": 5, "w": 12, "h": 7 },
+          "datasource": { "type": "prometheus", "uid": "prometheus" },
+          "targets": [
+            {
+              "expr": "sum by (name) (certmanager_certificate_ready_status{namespace=~\"$namespace\", condition=\"False\"})",
+              "refId": "A"
+            }
+          ]
+        },
+        {
+          "type": "timeseries",
+          "title": "Time to expiry (min across certs)",
+          "gridPos": { "x": 12, "y": 5, "w": 12, "h": 7 },
+          "datasource": { "type": "prometheus", "uid": "prometheus" },
+          "targets": [
+            {
+              "expr": "min(certmanager_certificate_expiration_timestamp_seconds{namespace=~\"$namespace\"} - time()) / 3600",
+              "refId": "A"
+            }
+          ]
+        },
+        {
+          "type": "timeseries",
+          "title": "ACME Orders created / failed (rate)",
+          "gridPos": { "x": 0, "y": 12, "w": 12, "h": 7 },
+          "datasource": { "type": "prometheus", "uid": "prometheus" },
+          "targets": [
+            { "expr": "sum(rate(certmanager_acme_orders_total{namespace=~\"$namespace\", status=\"valid\"}[5m]))", "refId": "A" },
+            { "expr": "sum(rate(certmanager_acme_orders_total{namespace=~\"$namespace\", status=\"invalid\"}[5m]))", "refId": "B" }
+          ]
+        },
+        {
+          "type": "timeseries",
+          "title": "ACME Challenges created / failed (rate)",
+          "gridPos": { "x": 12, "y": 12, "w": 12, "h": 7 },
+          "datasource": { "type": "prometheus", "uid": "prometheus" },
+          "targets": [
+            { "expr": "sum(rate(certmanager_acme_challenges_total{namespace=~\"$namespace\", status=\"valid\"}[5m]))", "refId": "A" },
+            { "expr": "sum(rate(certmanager_acme_challenges_total{namespace=~\"$namespace\", status=\"invalid\"}[5m]))", "refId": "B" }
+          ]
+        },
+        {
+          "type": "timeseries",
+          "title": "Controller sync duration p95 (seconds)",
+          "gridPos": { "x": 0, "y": 19, "w": 24, "h": 7 },
+          "datasource": { "type": "prometheus", "uid": "prometheus" },
+          "targets": [
+            {
+              "expr": "histogram_quantile(0.95, sum by (le, controller) (rate(certmanager_controller_sync_duration_seconds_bucket{namespace=~\"$namespace\"}[5m])))",
+              "refId": "A"
+            }
+          ]
+        }
+      ]
+    }
