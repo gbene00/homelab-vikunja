@@ -1,0 +1,28 @@
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: cert-manager-alerts
+  namespace: monitoring
+  labels:
+    release: kube-prometheus-stack
+spec:
+  groups:
+    - name: certmanager.rules
+      rules:
+        - alert: CertManagerCertificateExpiringSoon
+          expr: (certmanager_certificate_expiration_timestamp_seconds - time()) < 7*24*3600
+          for: 30m
+          labels:
+            severity: warning
+          annotations:
+            summary: "Certificate expiring within 7 days"
+            description: "Certificate {{ $labels.name }} in ns {{ $labels.namespace }} expires soon."
+
+        - alert: CertManagerACMEOrderFailures
+          expr: sum(rate(certmanager_acme_orders_total{status="invalid"}[10m])) > 0
+          for: 10m
+          labels:
+            severity: warning
+          annotations:
+            summary: "ACME order failures detected"
+            description: "cert-manager reports invalid ACME orders."
