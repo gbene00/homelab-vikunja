@@ -10,3 +10,4 @@ resources:
   - kube-prom-stack/servicemonitor-cert-manager.yaml
   - kube-prom-stack/podmonitor-ingress-nginx.yaml
   - dashboards
+  - alerts
