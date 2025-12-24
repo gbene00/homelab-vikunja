@@ -1,0 +1,37 @@
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: vikunja-alerts
+  namespace: monitoring
+  labels:
+    release: kube-prometheus-stack
+spec:
+  groups:
+    - name: vikunja.rules
+      rules:
+        - alert: VikunjaTargetDown
+          expr: up{namespace="vikunja", job=~".*vikunja.*"} == 0
+          for: 5m
+          labels:
+            severity: critical
+          annotations:
+            summary: "Vikunja metrics target down"
+            description: "Vikunja scrape target {{ $labels.instance }} is down."
+
+        - alert: VikunjaDeploymentUnavailable
+          expr: kube_deployment_status_replicas_unavailable{namespace="vikunja", deployment="vikunja"} > 0
+          for: 10m
+          labels:
+            severity: warning
+          annotations:
+            summary: "Vikunja deployment has unavailable replicas"
+            description: "Deployment vikunja has unavailable replicas for 10m."
+
+        - alert: VikunjaActiveUsersZero
+          expr: max(vikunja_active_users) == 0
+          for: 30m
+          labels:
+            severity: info
+          annotations:
+            summary: "No active Vikunja users"
+            description: "Vikunja active users is zero (informational)."
