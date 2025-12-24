@@ -1,0 +1,36 @@
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: ingress-alerts
+  namespace: monitoring
+  labels:
+    release: kube-prometheus-stack
+spec:
+  groups:
+    - name: ingress.rules
+      rules:
+        - alert: IngressHigh5xxRate
+          expr: |
+            sum(rate(nginx_ingress_controller_requests{status=~"5.."}[5m]))
+            /
+            sum(rate(nginx_ingress_controller_requests[5m]))
+            > 0.02
+          for: 10m
+          labels:
+            severity: warning
+          annotations:
+            summary: "Ingress 5xx error ratio > 2%"
+            description: "High 5xx ratio on ingress-nginx for 10m."
+
+        - alert: IngressHighLatencyP95
+          expr: |
+            histogram_quantile(
+              0.95,
+              sum by (le) (rate(nginx_ingress_controller_request_duration_seconds_bucket[5m]))
+            ) > 1
+          for: 10m
+          labels:
+            severity: warning
+          annotations:
+            summary: "Ingress p95 latency > 1s"
+            description: "ingress-nginx p95 request duration is > 1s for 10m."
