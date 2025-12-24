@@ -5,3 +5,4 @@ resources:
   - dashboard-ingress-nginx.yaml
   - dashboard-cert-manager.yaml
   - dashboard-vikunja.yaml
+  - dashboard-platform.yaml

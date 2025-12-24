@@ -1,0 +1,136 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: grafana-dashboard-platform
+  namespace: monitoring
+  labels:
+    grafana_dashboard: "1"
+data:
+  platform.json: |
+    {
+      "uid": "platform",
+      "title": "Platform",
+      "timezone": "browser",
+      "schemaVersion": 39,
+      "version": 1,
+      "refresh": "30s",
+      "tags": ["platform", "nodes", "kubernetes", "sre"],
+      "time": { "from": "now-6h", "to": "now" },
+      "templating": {
+        "list": [
+          {
+            "name": "node",
+            "type": "query",
+            "datasource": { "type": "prometheus", "uid": "prometheus" },
+            "query": "label_values(node_uname_info, instance)",
+            "current": { "selected": false, "text": "All", "value": ".*" }
+          }
+        ]
+      },
+      "panels": [
+        {
+          "type": "timeseries",
+          "title": "Node Ready (0/1)",
+          "gridPos": { "x": 0, "y": 0, "w": 24, "h": 6 },
+          "datasource": { "type": "prometheus", "uid": "prometheus" },
+          "targets": [
+            {
+              "expr": "max by (node) (kube_node_status_condition{condition=\"Ready\", status=\"true\"})",
+              "refId": "A"
+            }
+          ]
+        },
+        {
+          "type": "timeseries",
+          "title": "CPU usage % (per node)",
+          "gridPos": { "x": 0, "y": 6, "w": 12, "h": 7 },
+          "datasource": { "type": "prometheus", "uid": "prometheus" },
+          "targets": [
+            {
+              "expr": "100 * (1 - avg by (instance) (rate(node_cpu_seconds_total{mode=\"idle\", instance=~\"$node\"}[5m])))",
+              "refId": "A"
+            }
+          ]
+        },
+        {
+          "type": "timeseries",
+          "title": "CPU load (1m / 5m / 15m)",
+          "gridPos": { "x": 12, "y": 6, "w": 12, "h": 7 },
+          "datasource": { "type": "prometheus", "uid": "prometheus" },
+          "targets": [
+            { "expr": "node_load1{instance=~\"$node\"}", "refId": "A" },
+            { "expr": "node_load5{instance=~\"$node\"}", "refId": "B" },
+            { "expr": "node_load15{instance=~\"$node\"}", "refId": "C" }
+          ]
+        },
+        {
+          "type": "timeseries",
+          "title": "Memory usage % (per node)",
+          "gridPos": { "x": 0, "y": 13, "w": 12, "h": 7 },
+          "datasource": { "type": "prometheus", "uid": "prometheus" },
+          "targets": [
+            {
+              "expr": "100 * (1 - (node_memory_MemAvailable_bytes{instance=~\"$node\"} / node_memory_MemTotal_bytes{instance=~\"$node\"}))",
+              "refId": "A"
+            }
+          ]
+        },
+        {
+          "type": "timeseries",
+          "title": "Memory available (GiB)",
+          "gridPos": { "x": 12, "y": 13, "w": 12, "h": 7 },
+          "datasource": { "type": "prometheus", "uid": "prometheus" },
+          "targets": [
+            {
+              "expr": "node_memory_MemAvailable_bytes{instance=~\"$node\"} / 1024 / 1024 / 1024",
+              "refId": "A"
+            }
+          ]
+        },
+        {
+          "type": "timeseries",
+          "title": "Disk usage % (top mountpoints)",
+          "description": "Shows disk usage percentage for non-tmpfs/non-overlay mounts. Filter by node using the dropdown.",
+          "gridPos": { "x": 0, "y": 20, "w": 24, "h": 8 },
+          "datasource": { "type": "prometheus", "uid": "prometheus" },
+          "targets": [
+            {
+              "expr": "100 * (1 - (node_filesystem_avail_bytes{fstype!~\"tmpfs|overlay\", instance=~\"$node\"} / node_filesystem_size_bytes{fstype!~\"tmpfs|overlay\", instance=~\"$node\"}))",
+              "refId": "A"
+            }
+          ]
+        },
+        {
+          "type": "timeseries",
+          "title": "Disk IO (reads/writes bytes/sec)",
+          "gridPos": { "x": 0, "y": 28, "w": 24, "h": 7 },
+          "datasource": { "type": "prometheus", "uid": "prometheus" },
+          "targets": [
+            {
+              "expr": "sum by (instance) (rate(node_disk_read_bytes_total{instance=~\"$node\"}[5m]))",
+              "refId": "A"
+            },
+            {
+              "expr": "sum by (instance) (rate(node_disk_written_bytes_total{instance=~\"$node\"}[5m]))",
+              "refId": "B"
+            }
+          ]
+        },
+        {
+          "type": "timeseries",
+          "title": "Network (RX/TX bytes/sec)",
+          "gridPos": { "x": 0, "y": 35, "w": 24, "h": 7 },
+          "datasource": { "type": "prometheus", "uid": "prometheus" },
+          "targets": [
+            {
+              "expr": "sum by (instance) (rate(node_network_receive_bytes_total{device!~\"lo\", instance=~\"$node\"}[5m]))",
+              "refId": "A"
+            },
+            {
+              "expr": "sum by (instance) (rate(node_network_transmit_bytes_total{device!~\"lo\", instance=~\"$node\"}[5m]))",
+              "refId": "B"
+            }
+          ]
+        }
+      ]
+    }
