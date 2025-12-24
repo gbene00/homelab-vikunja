@@ -1,0 +1,59 @@
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: platform-alerts
+  namespace: monitoring
+  labels:
+    release: kube-prometheus-stack
+spec:
+  groups:
+    - name: platform.rules
+      rules:
+        - alert: KubernetesPodCrashLooping
+          expr: max_over_time(kube_pod_container_status_waiting_reason{reason="CrashLoopBackOff"}[10m]) >= 1
+          for: 10m
+          labels:
+            severity: warning
+          annotations:
+            summary: "Pod is crash looping"
+            description: "Pod {{ $labels.namespace }}/{{ $labels.pod }} container {{ $labels.container }} is in CrashLoopBackOff."
+
+        - alert: KubernetesContainerRestartRateHigh
+          expr: sum by (namespace, pod, container) (rate(kube_pod_container_status_restarts_total[10m])) > 0.05
+          for: 15m
+          labels:
+            severity: warning
+          annotations:
+            summary: "High container restart rate"
+            description: "Container {{ $labels.namespace }}/{{ $labels.pod }} ({{ $labels.container }}) restart rate is high."
+
+        - alert: TargetDown
+          expr: up == 0
+          for: 10m
+          labels:
+            severity: warning
+          annotations:
+            summary: "Prometheus target down"
+            description: "Target {{ $labels.job }} ({{ $labels.instance }}) in namespace={{ $labels.namespace }} has been down for 10m."
+
+        - alert: NodeFilesystemSpaceFillingUp
+          expr: |
+            (node_filesystem_avail_bytes{fstype!~"tmpfs|overlay"} / node_filesystem_size_bytes{fstype!~"tmpfs|overlay"}) < 0.15
+            and on(instance, device, mountpoint) node_filesystem_readonly{fstype!~"tmpfs|overlay"} == 0
+          for: 30m
+          labels:
+            severity: warning
+          annotations:
+            summary: "Node filesystem < 15% free"
+            description: "Node {{ $labels.instance }} mount {{ $labels.mountpoint }} is running low on disk."
+
+        - alert: NodeFilesystemSpaceFillingUpCritical
+          expr: |
+            (node_filesystem_avail_bytes{fstype!~"tmpfs|overlay"} / node_filesystem_size_bytes{fstype!~"tmpfs|overlay"}) < 0.05
+            and on(instance, device, mountpoint) node_filesystem_readonly{fstype!~"tmpfs|overlay"} == 0
+          for: 15m
+          labels:
+            severity: critical
+          annotations:
+            summary: "Node filesystem < 5% free"
+            description: "Node {{ $labels.instance }} mount {{ $labels.mountpoint }} is critically low on disk."
